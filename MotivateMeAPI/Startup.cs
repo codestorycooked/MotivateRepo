@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MotivateMeAPI.DataAccess.Interface;
+using MotivateMeAPI.DataAccess.Repository;
+using MotivateMeAPI.Providers;
 
 namespace MotivateMeAPI
 {
@@ -27,8 +30,29 @@ namespace MotivateMeAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+
+            //cors Support
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", builder => builder.AllowAnyOrigin()
+                 .AllowAnyMethod()
+                 .AllowAnyHeader()
+                 .AllowCredentials());
+
+            });
             // Add framework services.
             services.AddMvc();
+
+            //Settings
+            services.Configure<Settings>(options =>
+            {
+                options.ConnectionString = Configuration.GetSection("MongConnection:ConnectionString").Value;
+                options.Database = Configuration.GetSection("MongoConnection:Database").Value;
+            });
+
+            services.AddTransient<ICategory, CategoryRepository>();
+            services.AddTransient<IThoughts, ThoughtsRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
